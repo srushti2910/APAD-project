@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
+import './prodid.css';
 
 const Login = () => {
   const [projectName, setProjectName] = useState("");
@@ -35,23 +36,27 @@ const Login = () => {
   };
 
   return (
+    <div className = "transbox">
     <div>
-      <h2>Project Login</h2>
+      <h2>Project Login</h2><br/><br/>
       <form onSubmit={handleLogin}>
         <div>
-          <label>Project Name:</label>
-          <input type="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+          <label>Project Name:&ensp;</label>
+          <input type="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} required />*<br/><br/>
         </div>
         <div>
-          <label>Project Id:</label>
-          <input type="projectId" value={projectId} onChange={(e) => setProjectId(e.target.value)} />
+          <label>Project Id: &ensp; &ensp;</label>
+          <input type="projectId" value={projectId} onChange={(e) => setProjectId(e.target.value)} required/>*<br/><br/><br/><br/>
         </div>
+        <button type="submit">Join Project</button><br/><br/>
         <div>
           <Link to="/createNewProject">Want to create a new project? Press this</Link>
         </div>
-        <button type="submit">Join Project</button>
+        
       </form>
     </div>
+    </div>
+    
   );  
 };
 

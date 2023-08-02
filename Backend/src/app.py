@@ -9,6 +9,7 @@ import models
 app = Flask(__name__)
 
 projectId = 0
+name = ""
 
 app.config['MONGO_URI'] = 'mongodb://localhost/APAD_app'
 mongo = PyMongo(app)
@@ -55,6 +56,10 @@ def checkout():
 @app.route('/checkin', methods=['POST'])
 def checkin():
     return models.dashboard().checkin()
+
+@app.route('/getdetails', methods=['GET'])
+def getdetails():
+    return models.dashboard().getdetails()
 
 if __name__ == '__main__':
     app.run(debug=True)

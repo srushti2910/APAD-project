@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import './page2.css'
 
 const CreateNewUser = () => {
   const [firstName, setFirstName] = useState("");
@@ -42,39 +43,41 @@ const CreateNewUser = () => {
   };
 
   return (
+    <div className ="transbox">
     <div>
-      <h2>New User</h2>
+      <h1>New User</h1>
       <form onSubmit={handleLogin}>
         <div>
           <label>FirstName:</label>
-          <input type="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+          <input type="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required/>*<br/><br/>
         </div>
         <div>
           <label>LastName:</label>
-          <input type="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+          <input type="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} /><br/><br/>
         </div>
         <div>
           <label>PreferredName:</label>
-          <input type="preferredName" value={preferredName} onChange={(e) => setPreferredName(e.target.value)} />
+          <input type="preferredName" value={preferredName} onChange={(e) => setPreferredName(e.target.value)} /><br/><br/>
         </div>
         <div>
           <label>Email:</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}  required/>*<br/><br/>
         </div>
         <div>
           <label>Contact:</label>
-          <input type="contact" value={contact} onChange={(e) => setContact(e.target.value)} />
+          <input type="contact" value={contact} onChange={(e) => setContact(e.target.value)} /><br/><br/>
         </div>
         <div>
           <label>Password:</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>*<br/><br/>
         </div>
         <div>
           <label>Confirm Password:</label>
-          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+          <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required/>*<br/><br/>
         </div>
-        <button type="submit">Create</button>
+        <button type="submit"> Create </button>
       </form>
+    </div>
     </div>
   );  
 };

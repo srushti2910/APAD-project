@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import './newprod.css'
 
 const NewProject = () => {
   const [projectName, setProjectName] = useState("");
   const [projectId, setProjectId] = useState("");
+  const [description, setDescription] = useState("");
  
   const navigate = useNavigate();
   const handleLogin = async (e) => {
@@ -21,7 +23,7 @@ const NewProject = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ projectName, projectId }),
+      body: JSON.stringify({ projectName, projectId, description }),
     });
 
     const data = await response.json();
@@ -36,19 +38,26 @@ const NewProject = () => {
   };
 
   return (
+   <div className = "transbox">
     <div>
-      <h2>New Project</h2>
+      <br/>
+      <h2>New Project</h2><br/><br/>
       <form onSubmit={handleLogin}>
         <div>
-          <label>Project Name:</label>
-          <input type="projectName" value={projectName} onChange={(e) => setProjectName(e.target.value)} />
+          <label>Project Name:&ensp;</label>
+          <input type="name" value={projectName} onChange={(e) => setProjectName(e.target.value)} required />*<br/><br/>
         </div>
         <div>
-          <label>Project Id:</label>
-          <input type="projectId" value={projectId} onChange={(e) => setProjectId(e.target.value)} />
+          <label>Project Id: &ensp;&ensp;</label>
+          <input type="projectId" value={projectId} onChange={(e) => setProjectId(e.target.value)} required/>*<br/><br/>
+        </div>
+        <div>
+          <label>Project Description: &ensp;&ensp;</label>
+          <input type="description" value={description} onChange={(e) => setDescription(e.target.value)}/><br/><br/>
         </div>
         <button type="submit">Create Project</button>
       </form>
+    </div>
     </div>
   );  
 };

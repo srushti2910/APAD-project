@@ -35,7 +35,8 @@ class user:
           a = document["email"] == userdetails['email']
           b = bcrypt.checkpw(userdetails['password'].encode('utf-8'), document["password"])
           if(document["email"] == userdetails['email'] and bcrypt.checkpw(userdetails['password'].encode('utf-8'), document["password"])):
-
+            global name 
+            name = document["firstName"] + " " + document["lastName"]
             flag+=1
             return jsonify({'msg': "SignIn succcessful"})
       #if db.users.find_one({"email": userdetails['email'], "password": userdetails['password']}):
@@ -70,6 +71,8 @@ class user:
                 newUser['password'] = (bcrypt.hashpw(newUser['password'].encode('utf-8'), bcrypt.gensalt()))
 
                 if db.users.insert_one(newUser):
+                    global name
+                    name = newUser["firstName"] + " " + newUser["lastName"]
                     return jsonify({'msg': "User Added Successfully"})     
                 else:
                     return jsonify({'error': "error creating new user"})
@@ -102,7 +105,8 @@ class project:
        newProject = {
           '-id': uuid.uuid4().hex,
           'projectName': request.json['projectName'],
-          'projectId': request.json['projectId']
+          'projectId': request.json['projectId'],
+          'description': request.json['description']
        }
        if(db.projects.find_one({"projectId": newProject['projectId']})):
            return jsonify({'error': "Project Id Aready Exists use different Project Id"}), 500
@@ -159,6 +163,26 @@ class dashboard:
        
         return jsonify({"value": availability_headset})
     
+    def getdetails(self):
+
+        response = {
+            "projectId" : "",
+            "checkout_webcam": "",
+            "checkout_headset": ""
+        }
+
+        if projectId == 0 :
+            return jsonify({"value": response})
+        else :
+            project_id = db.projects.find_one({"_id": projectId})
+            if project_id :
+                response["projectId"] = project_id["projectId"]
+                response["checkout_headset"] = project_id["headset"]
+                response["checkout_webcam"] = project_id["webcam"]
+                return jsonify({"value": response})
+            else :
+                return jsonify({"value": response})
+    
 
     def checkout(self):
         
@@ -191,7 +215,8 @@ class dashboard:
                             UpdateHeadset = {'$set' : {"headset" : int(HardwareSets["headset"])}}
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateHeadset)
-
+                    else :
+                        return jsonify({'error': "Please login first to checkout"}), 300
 
                     response = {
 
@@ -229,6 +254,9 @@ class dashboard:
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateWebcam)
 
+                    else :        
+                        return jsonify({'error': "Please login first to checkout"}), 300
+
                     response = {
 
                             "headset" : result_headset["headset"],
@@ -242,7 +270,7 @@ class dashboard:
 
 
 
-        else :
+        elif HardwareSets['webcam'] != "" and HardwareSets['headset'] != "" :
             result_headset = db.Availability.find_one({"headset": {"$exists": True}})
             result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
             result_id = db.Availability.find_one({"_id": {"$exists": True}})
@@ -278,6 +306,8 @@ class dashboard:
                             UpdateHeadset = {'$set' : {"headset" : int(HardwareSets["headset"])}}
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateHeadset)
+                    else :
+                        return jsonify({'error': "Please login first to checkout"}), 300
 
 
                     response = {
@@ -289,7 +319,10 @@ class dashboard:
                     return jsonify({"value": response, "msg": "Succesfull"}), 200
             else :
                 return jsonify({'error': "Error checking out"}), 400
-            
+
+        else :
+            return jsonify({'error': "Error Checking out"}), 400    
+        
          
     def checkin(self):    
 
@@ -343,19 +376,56 @@ class dashboard:
                     if int(HardwareSets["webcam"]) > project_id["webcam"]:
                         return jsonify({'error': "You are trying to checkin more than you have checkedout"}), 400
                     else :
-                        new_webcam = result_webcam["webcam"] + int(HardwareSets['headset'])
+                        new_webcam = result_webcam["webcam"] + int(HardwareSets['webcam'])
                         id = {'_id' : result_id["_id"]}
-                        values = {'$set' : {"webcam" : new_headset}}
+                        values = {'$set' : {"webcam" : new_webcam}}
                         db.Availability.update_one(id, values)
 
                         update_webcam = project_id["webcam"] - int(HardwareSets["webcam"])
-                        UpdateWebcam = {'$set' : {"webcam" : update_webcam}}
+                        Update = {'$set' : {"webcam" : update_webcam}}
                         id_update = {'_id' : project_id["_id"]}
-                        db.projects.update_one(id_update, UpdateWebcam)
+                        db.projects.update_one(id_update, Update)
 
                         response = {
 
-                            "headset" : result_headset,
+                            "headset" : result_headset["headset"],
+                            "webcam" : new_webcam
+                        }
+
+                        return jsonify({"value": response, "msg": "Succesfull"}), 200
+            
+                else :
+                    return jsonify({'error': "The field you are requesting to checkin has not been checkedout by your project"}), 500
+
+            else :
+                return jsonify({'error': "Please login first to checkin"}), 300
+            
+        elif HardwareSets['webcam'] != "" and HardwareSets['headset'] != "":
+            result_headset = db.Availability.find_one({"headset": {"$exists": True}})
+            result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
+            result_id = db.Availability.find_one({"_id": {"$exists": True}})
+            project_id = db.projects.find_one({"_id": projectId})
+            if project_id : 
+                if "webcam" in project_id and "headset" in project_id:
+                    if int(HardwareSets["webcam"]) > project_id["webcam"] or int(HardwareSets["headset"]) > project_id["headset"]:
+                        return jsonify({'error': "You are trying to checkin more than you have checkedout"}), 400
+                    else :
+                        new_webcam = result_webcam["webcam"] + int(HardwareSets['headset'])
+                        new_headset = result_headset["headset"] + int(HardwareSets['headset'])
+                        id = {'_id' : result_id["_id"]}
+                        values = {'$set' : {"webcam" : new_webcam, "headset": new_headset}}
+                        db.Availability.update_one(id, values)
+
+                        update_webcam = project_id["webcam"] - int(HardwareSets["webcam"])
+                        update_headset = project_id["headset"] - int(HardwareSets["headset"])
+                        Update = {'$set' : {"webcam" : update_webcam, "headset": update_headset}}
+                        
+                        id_update = {'_id' : project_id["_id"]}
+                        db.projects.update_one(id_update, Update)
+
+                        response = {
+
+                            "headset" : new_headset,
                             "webcam" : new_webcam
                         }
 
@@ -367,7 +437,10 @@ class dashboard:
             else :
                 return jsonify({'error': "Please login first to checkin"}), 300
 
+        else :
+            return jsonify({'error': "Error Checking in"}), 100
 
+    
   
    
    
