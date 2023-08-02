@@ -61,5 +61,11 @@ def checkin():
 def getdetails():
     return models.dashboard().getdetails()
 
+@app.route('/getmembers', methods=['GET'])
+def getmembers():
+    return models.dashboard().getmembers()
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,7 +1,7 @@
 from flask import Flask,  request, jsonify, render_template
 import uuid
 from passlib.hash import pbkdf2_sha256
-from app import db, projectId
+from app import db, projectId, name
 from cryptography.fernet import Fernet
 import base64
 import bcrypt
@@ -87,11 +87,21 @@ class project:
         projectDetails = {
           'projectName' : request.json['projectName'],
           'projectId' : request.json['projectId'],
-        }   
+        }  
+
+        members = [] 
+
+        if(name == "") :
+            return jsonify({'error': "Please login first to login to a project"}), 400
 
         result = db.projects.find_one({"projectName": projectDetails['projectName'], "projectId": projectDetails['projectId']})  
             
         if result:
+            if "members" in result :
+                db.projects.update_one({'_id': result["_id"]}, {'$addToSet': {"members": name}})
+            else :
+                members.append(name)
+                db.projects.update_one({'_id': result["_id"]},{'$set' : {"members" : members}})
             flag+=1
             global projectId
             projectId = result["_id"]
@@ -108,11 +118,16 @@ class project:
           'projectId': request.json['projectId'],
           'description': request.json['description']
        }
+       members = []
+       if(name == "") :
+            return jsonify({'error': "Please login first to create new peoject"}), 400
        if(db.projects.find_one({"projectId": newProject['projectId']})):
            return jsonify({'error': "Project Id Aready Exists use different Project Id"}), 500
        
        if db.projects.insert_one(newProject):
             result = db.projects.find_one({"projectName": newProject['projectName'], "projectId": newProject['projectId']})
+            members.append(name)
+            db.projects.update_one({'_id': result["_id"]},{'$set' : {"members" : members}})
             if result:
                 global projectId
                 projectId = result["_id"]       
@@ -177,12 +192,24 @@ class dashboard:
             project_id = db.projects.find_one({"_id": projectId})
             if project_id :
                 response["projectId"] = project_id["projectId"]
-                response["checkout_headset"] = project_id["headset"]
-                response["checkout_webcam"] = project_id["webcam"]
+                if "headset" in project_id :
+                    response["checkout_headset"] = project_id["headset"]
+                if "webcam" in project_id :
+                    response["checkout_webcam"] = project_id["webcam"]
                 return jsonify({"value": response})
             else :
                 return jsonify({"value": response})
+            
     
+
+    def getmembers(self) :
+
+        project_id = db.projects.find_one({"_id": projectId})
+        if project_id :
+            if "members" in project_id :
+                members = project_id["members"]
+                return jsonify(members)
+  
 
     def checkout(self):
         
@@ -212,16 +239,24 @@ class dashboard:
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateHeadset)
                         else :
+                            update_headset = int(HardwareSets["headset"])
                             UpdateHeadset = {'$set' : {"headset" : int(HardwareSets["headset"])}}
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateHeadset)
+                        
+                        if "webcam" in project_id :
+                            update_webcam = project_id["webcam"]
+                        else :
+                            update_webcam = ""
                     else :
                         return jsonify({'error': "Please login first to checkout"}), 300
 
                     response = {
 
                             "headset" : new_headset,
-                            "webcam" : result_webcam["webcam"]
+                            "webcam" : result_webcam["webcam"],
+                            "checkout_headset" : update_headset,
+                            "checkout_webcam" : update_webcam
                     }
                     return jsonify({"value": response, "msg": "Succesfull"}), 200
             else :
@@ -250,9 +285,15 @@ class dashboard:
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateWebcam)
                         else :
+                            update_webcam = int(HardwareSets["webcam"])
                             UpdateWebcam = {'$set' : {"webcam" : int(HardwareSets["webcam"])}}
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateWebcam)
+
+                        if "headset" in project_id :
+                            update_headset = project_id["headset"]
+                        else :
+                            update_headset = ""
 
                     else :        
                         return jsonify({'error': "Please login first to checkout"}), 300
@@ -260,7 +301,9 @@ class dashboard:
                     response = {
 
                             "headset" : result_headset["headset"],
-                            "webcam" : new_webcam
+                            "webcam" : new_webcam,
+                            "checkout_webcam" : update_webcam,
+                            "checkout_headset" : update_headset
                     }
 
                     return jsonify({"value": response, "msg": "Succesfull"}), 200
@@ -292,6 +335,7 @@ class dashboard:
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateWebcam)
                         else :
+                            update_webcam = int(HardwareSets["webcam"])
                             UpdateWebcam = {'$set' : {"webcam" : int(HardwareSets["webcam"])}}
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateWebcam)
@@ -303,6 +347,7 @@ class dashboard:
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateHeadset)
                         else :
+                            update_headset = int(HardwareSets["headset"])
                             UpdateHeadset = {'$set' : {"headset" : int(HardwareSets["headset"])}}
                             id_update = {'_id' : project_id["_id"]}
                             db.projects.update_one(id_update, UpdateHeadset)
@@ -313,7 +358,9 @@ class dashboard:
                     response = {
 
                             "headset" : new_headset,
-                            "webcam" : new_webcam
+                            "webcam" : new_webcam,
+                            "checkout_webcam" : update_webcam,
+                            "checkout_headset" : update_headset
                     }
 
                     return jsonify({"value": response, "msg": "Succesfull"}), 200
@@ -351,17 +398,24 @@ class dashboard:
                         id_update = {'_id' : project_id["_id"]}
                         db.projects.update_one(id_update, UpdateHeadset)
 
+                        if "webcam" in project_id:
+                            update_webcam = project_id["webcam"]
+                        else :
+                            update_webcam = ""
+
                         response = {
 
                             "headset" : new_headset,
-                            "webcam" : result_webcam["webcam"]
+                            "webcam" : result_webcam["webcam"],
+                            "checkout_webcam" : update_webcam,
+                            "checkout_headset" : update_headset
                         }
 
                         return jsonify({"value": response, "msg": "Succesfull"}), 200
-            
+                
                 else :
                     return jsonify({'error': "The field you are requesting to checkin has not been checkedout by your project"}), 500
-
+                
             else :
                 return jsonify({'error': "Please login first to checkin"}), 300
         
@@ -386,10 +440,17 @@ class dashboard:
                         id_update = {'_id' : project_id["_id"]}
                         db.projects.update_one(id_update, Update)
 
+                        if "headset" in project_id :
+                            update_headset = project_id["headset"]
+                        else :
+                            update_headset = ""
+
                         response = {
 
                             "headset" : result_headset["headset"],
-                            "webcam" : new_webcam
+                            "webcam" : new_webcam,
+                            "checkout_webcam" : update_webcam,
+                            "checkout_headset" : update_headset
                         }
 
                         return jsonify({"value": response, "msg": "Succesfull"}), 200
@@ -426,7 +487,9 @@ class dashboard:
                         response = {
 
                             "headset" : new_headset,
-                            "webcam" : new_webcam
+                            "webcam" : new_webcam,
+                            "checkout_webcam" : update_webcam,
+                            "checkout_headset" : update_headset
                         }
 
                         return jsonify({"value": response, "msg": "Succesfull"}), 200

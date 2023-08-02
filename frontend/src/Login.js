@@ -28,10 +28,11 @@ const Login = () => {
 
     const data = await response.json();
     if(response.status === 200){
-        navigate("/dashboard")
-
+      navigate("/dashboard")
+    }else if(response.status === 400){
+      toast.error('Please login first to create new peoject', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
     }else{
-        toast.error('invalid project name or project id', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      toast.error('invalid project name or project id', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
     }
   };
 

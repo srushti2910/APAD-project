@@ -18,6 +18,7 @@ const Dashboard = ({}) => {
   const [projectId, setprojectId] = useState("");
   const [checkout_headset, setCheckout_headset] = useState("");
   const [checkout_webcam, setCheckout_webcam] = useState("");
+  const [members, setMembers] = useState([]);
   const navigate = useNavigate();
 
 
@@ -62,6 +63,22 @@ const Dashboard = ({}) => {
       }
     };
     fetchDetails();
+  }, []);
+
+
+  useEffect(() => {
+    const fetchMembers = async () => {
+      try{
+          const response = await fetch("/getmembers");
+          const data = await response.json();
+          console.log(response)
+          console.log(data)
+          setMembers(data)
+      }catch (error) {
+        console.error('Error fetching members:', error);
+      }
+    };
+    fetchMembers();
   }, []);
 
   
@@ -125,6 +142,8 @@ const Dashboard = ({}) => {
 
         setHeadset_Availability(data.value.headset) 
         setWebcam_Availability(data.value.webcam)
+        setCheckout_headset(data.value.checkout_headset)
+        setCheckout_webcam(data.value.checkout_webcam)
         setHeadset('')
         setWebcam('')
 
@@ -172,6 +191,8 @@ const Dashboard = ({}) => {
 
         setHeadset_Availability(data.value.headset) 
         setWebcam_Availability(data.value.webcam)
+        setCheckout_headset(data.value.checkout_headset)
+        setCheckout_webcam(data.value.checkout_webcam)
         setHeadset('')
         setWebcam('')
 
@@ -232,19 +253,14 @@ const Dashboard = ({}) => {
       <div className = 'trans'>
         <br/>
         <h2>Project members </h2>
-        <table class = 'sec'>
-          
-          <tr>
-            <td>""</td>
-          </tr>
-        </table>
-        
+       
 
-        
-
-
-
-
+              <ul>
+                {members.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+           
         </div>
         
         

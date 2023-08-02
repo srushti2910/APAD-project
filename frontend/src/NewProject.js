@@ -32,6 +32,8 @@ const NewProject = () => {
         navigate("/dashboard")
     }else if(response.status === 500){
         toast.error('Project Id Aready Exists use different Project Id', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+    }else if(response.status === 400){
+      toast.error('Please login first to create new peoject', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
     }else{
         toast.error('Error creating project', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
     }
