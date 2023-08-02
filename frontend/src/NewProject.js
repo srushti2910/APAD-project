@@ -2,9 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { Link } from 'react-router-dom';
 
-const Login = () => {
+const NewProject = () => {
   const [projectName, setProjectName] = useState("");
   const [projectId, setProjectId] = useState("");
  
@@ -17,7 +16,7 @@ const Login = () => {
         return;
       }
 
-    const response = await fetch("/login", {
+    const response = await fetch("/createNewProject", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -26,17 +25,19 @@ const Login = () => {
     });
 
     const data = await response.json();
+    console.log(response)
     if(response.status === 200){
         navigate("/dashboard")
-
+    }else if(response.status === 500){
+        toast.error('Project Id Aready Exists use different Project Id', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
     }else{
-        toast.error('invalid project name or project id', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+        toast.error('Error creating project', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
     }
   };
 
   return (
     <div>
-      <h2>Project Login</h2>
+      <h2>New Project</h2>
       <form onSubmit={handleLogin}>
         <div>
           <label>Project Name:</label>
@@ -46,13 +47,10 @@ const Login = () => {
           <label>Project Id:</label>
           <input type="projectId" value={projectId} onChange={(e) => setProjectId(e.target.value)} />
         </div>
-        <div>
-          <Link to="/createNewProject">Want to create a new project? Press this</Link>
-        </div>
-        <button type="submit">Join Project</button>
+        <button type="submit">Create Project</button>
       </form>
     </div>
   );  
 };
 
-export default Login;
+export default NewProject;

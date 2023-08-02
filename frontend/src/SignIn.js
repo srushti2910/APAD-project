@@ -2,14 +2,31 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
 
-const SignIn = () => {
+const SignIn = ({onSignIn}) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
  
   const navigate = useNavigate();
+
+  const handleEmailChange = (event) => {
+    setEmail(event.target.value);
+  };
+
+  const handlePasswordChange = (event) => {
+    setPassword(event.target.value);
+  };
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
+
+    if(email.trim() === "" || password.trim() === ""){
+      alert("Please fill in all fields");
+      return;
+    }
+
 
     const response = await fetch("/signIn", {
       method: "POST",
@@ -40,12 +57,13 @@ const SignIn = () => {
           <label>Password:</label>
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
         </div>
+        <div>
+          <Link to="/createNewUser">Don't have an account? Signup</Link>
+        </div>
         <button type="submit">Login</button>
       </form>
     </div>
-  );
-
-  
+  );  
 };
 
 export default SignIn;

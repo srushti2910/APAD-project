@@ -1,14 +1,15 @@
 from flask import Flask,  request, jsonify, render_template
 import uuid
 from passlib.hash import pbkdf2_sha256
-from app import db
+from app import db, projectId
 from cryptography.fernet import Fernet
 import base64
+import bcrypt
 
 #key = Fernet.generate_key()
 #f = Fernet(key)
 key = "B3cpAFLjfjWG41S5pXyC19WBWalycnMXmaE4Zg99TSs="
-flag = 0
+#projectId = 0
 
 #with open('mykey.key', 'wb') as mykey:
    #mykey.write(key)
@@ -18,18 +19,28 @@ flag = 0
 
 class user:
    
- 
    def userSignIn(self):
-      flag = 0
       f = Fernet(key)
+    
+      flag = 0
       userdetails = {
           'email' : request.json['email'],
           'password' : request.json['password'],
-      }     
-            
-      if db.users.find_one({"email": userdetails['email'], "password": userdetails['password']}):
-        flag+=1
-        return jsonify({'msg': "SignIn succcessful"})
+      } 
+      #userdetails['password'] = (bcrypt.hashpw(userdetails['password'].encode('utf-8'), bcrypt.gensalt())).decode('utf-8')  
+      #userdetails['password'] = (f.encrypt(userdetails['password'].encode()))     
+      for document in db.users.find():
+          email = document["email"]
+          password = document["password"]
+          a = document["email"] == userdetails['email']
+          b = bcrypt.checkpw(userdetails['password'].encode('utf-8'), document["password"])
+          if(document["email"] == userdetails['email'] and bcrypt.checkpw(userdetails['password'].encode('utf-8'), document["password"])):
+
+            flag+=1
+            return jsonify({'msg': "SignIn succcessful"})
+      #if db.users.find_one({"email": userdetails['email'], "password": userdetails['password']}):
+        #flag+=1
+        #return jsonify({'msg': "SignIn succcessful"})
             
       if flag == 0:
         return jsonify({'error': "invalid email id or password"}), 500
@@ -47,25 +58,45 @@ class user:
             'contact' : request.json['contact'],
             'password' : request.json['password'],       
         }  
-        if(db.user.find_one({ "email": newUser['email']})):  
+        
+        if(db.users.find_one({ "email": newUser['email']})):  
 
-            return jsonify({'msg': "Email id already exists please try signing or use another email"})
+            return jsonify({'error': "Email id already exists please try signing or use another email"}), 500
     
         else:
             if(newUser['password'] == confirmPassword):
 
+                #newUser['password'] = (f.encrypt(newUser['password'].encode()))  
+                newUser['password'] = (bcrypt.hashpw(newUser['password'].encode('utf-8'), bcrypt.gensalt()))
+
                 if db.users.insert_one(newUser):
                     return jsonify({'msg': "User Added Successfully"})     
                 else:
-                    return jsonify({'error': "error creating new user"}), 500
+                    return jsonify({'error': "error creating new user"})
             else:
-                return jsonify({'error': "Both the passwords are not matching"}),500
-    
-   
-
+                return jsonify({'error': "Both the passwords are not matching"}), 400
         
 
 class project:
+
+    def projectLogin(self):
+        flag = 0
+        projectDetails = {
+          'projectName' : request.json['projectName'],
+          'projectId' : request.json['projectId'],
+        }   
+
+        result = db.projects.find_one({"projectName": projectDetails['projectName'], "projectId": projectDetails['projectId']})  
+            
+        if result:
+            flag+=1
+            global projectId
+            projectId = result["_id"]
+            return jsonify({'msg': "Login succcessful"})
+            
+        if flag == 0:
+            return jsonify({'error': "invalid project name or project id"}), 500
+
        
     def createProject(self):
        newProject = {
@@ -73,8 +104,270 @@ class project:
           'projectName': request.json['projectName'],
           'projectId': request.json['projectId']
        }
-       db.projects.insert_one(newProject)
-       return jsonify({'msg': "Project Added Successfuly"})
+       if(db.projects.find_one({"projectId": newProject['projectId']})):
+           return jsonify({'error': "Project Id Aready Exists use different Project Id"}), 500
+       
+       if db.projects.insert_one(newProject):
+            result = db.projects.find_one({"projectName": newProject['projectName'], "projectId": newProject['projectId']})
+            if result:
+                global projectId
+                projectId = result["_id"]       
+            return jsonify({'msg': "Project Added Successfuly"})
+       else:
+            return jsonify({'error': "Error creating project"})
+       
+
+
+class dashboard:
+
+    def getWebCam_Capacity(self):
+       
+        capacity_webcam = 100
+            #'capacity_headset': 100
+        
+
+        result = db.fixed_values.find_one({"capacity_webcam": {"$exists": True}})
+        if result:
+            capacity_webcam = result["capacity_webcam"]
+       
+        return jsonify({"value": capacity_webcam})
+    
+    def getHeadset_Capacity(self):
+
+        capacity_headset = 100
+
+        result = db.fixed_values.find_one({"capacity_headset": {"$exists": True}})
+        if result:
+            capacity_headset = result["capacity_headset"]
+       
+        return jsonify({"value": capacity_headset})
+    
+    def getWebcamAvailability(self):
+
+        result = db.Availability.find_one({"webcam": {"$exists": True}})
+        if result:
+            availability_webcam = result["webcam"]
+       
+        return jsonify({"value": availability_webcam})
+    
+
+    def getHeadsetAvailability(self):
+
+        result = db.Availability.find_one({"headset": {"$exists": True}})
+        if result:
+            availability_headset = result["headset"]
+       
+        return jsonify({"value": availability_headset})
+    
+
+    def checkout(self):
+        
+        HardwareSets = {
+          'headset' : request.json['headset'],
+          'webcam' : request.json['webcam'],
+        }  
+
+        if HardwareSets['headset'] != "" and (HardwareSets['webcam'] == None or HardwareSets['webcam'] == ""):
+            result_headset = db.Availability.find_one({"headset": {"$exists": True}})
+            result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
+            result_id = db.Availability.find_one({"_id": {"$exists": True}})
+            
+            if result_headset:
+                if int(HardwareSets['headset']) > result_headset["headset"] :
+                    return jsonify({'error': "You have rquested for more items than available. Please request items within availability"}), 500
+                else :
+                    new_headset = result_headset["headset"] - int(HardwareSets['headset'])
+                    id = {'_id' : result_id["_id"]}
+                    values = {'$set' : {"headset" : new_headset}}
+                    db.Availability.update_one(id, values)
+                    project_id = db.projects.find_one({"_id": projectId})
+                    if project_id : 
+                        if "headset" in project_id :
+                            update_headset = project_id["headset"] + int(HardwareSets["headset"])
+                            UpdateHeadset = {'$set' : {"headset" : update_headset}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateHeadset)
+                        else :
+                            UpdateHeadset = {'$set' : {"headset" : int(HardwareSets["headset"])}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateHeadset)
+
+
+                    response = {
+
+                            "headset" : new_headset,
+                            "webcam" : result_webcam["webcam"]
+                    }
+                    return jsonify({"value": response, "msg": "Succesfull"}), 200
+            else :
+                return jsonify({'error': "Error checking out"}), 400
+
+
+
+        elif HardwareSets['webcam'] != "" and (HardwareSets['headset'] == None or HardwareSets['headset'] == ""):
+            result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
+            result_headset = db.Availability.find_one({"headset": {"$exists": True}})
+            result_id = db.Availability.find_one({"_id": {"$exists": True}})
+            
+            if result_webcam:
+                if int(HardwareSets['webcam']) > result_webcam["webcam"] :
+                    return jsonify({'error': "You have rquested for more items than available. Please request items within availability"}), 500
+                else :
+                    new_webcam = result_webcam["webcam"] - int(HardwareSets['webcam'])
+                    id = {'_id' : result_id["_id"]}
+                    values = {'$set' : {"webcam" : new_webcam}}
+                    db.Availability.update_one(id, values)
+                    project_id = db.projects.find_one({"_id": projectId})
+                    if project_id : 
+                        if "webcam" in project_id :
+                            update_webcam = project_id["webcam"] + int(HardwareSets["webcam"])
+                            UpdateWebcam = {'$set' : {"webcam" : update_webcam}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateWebcam)
+                        else :
+                            UpdateWebcam = {'$set' : {"webcam" : int(HardwareSets["webcam"])}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateWebcam)
+
+                    response = {
+
+                            "headset" : result_headset["headset"],
+                            "webcam" : new_webcam
+                    }
+
+                    return jsonify({"value": response, "msg": "Succesfull"}), 200
+            else :
+                return jsonify({'error': "Error checking out"}), 400
+
+
+
+
+        else :
+            result_headset = db.Availability.find_one({"headset": {"$exists": True}})
+            result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
+            result_id = db.Availability.find_one({"_id": {"$exists": True}})
+            
+            if result_headset and result_webcam:
+                if int(HardwareSets['webcam']) > result_webcam["webcam"] and int(HardwareSets['headset']) > result_headset["headset"]:
+                    return jsonify({'error': "You have rquested for more items than available. Please request items within availability"}), 500
+                else :
+                    new_webcam = result_webcam["webcam"] - int(HardwareSets['webcam'])
+                    new_headset = result_headset["headset"] - int(HardwareSets['headset'])
+                    id = {'_id' : result_id["_id"]}
+                    values = {'$set' : {"webcam" : new_webcam, "headset" : new_headset}}
+                    db.Availability.update_one(id, values)
+                    project_id = db.projects.find_one({"_id": projectId})
+                    if project_id : 
+                        if "webcam" in project_id :
+                            update_webcam = project_id["webcam"] + int(HardwareSets["webcam"])
+                            UpdateWebcam = {'$set' : {"webcam" : update_webcam}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateWebcam)
+                        else :
+                            UpdateWebcam = {'$set' : {"webcam" : int(HardwareSets["webcam"])}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateWebcam)
+
+
+                        if "headset" in project_id :
+                            update_headset = project_id["headset"] + int(HardwareSets["headset"])
+                            UpdateHeadset = {'$set' : {"headset" : update_headset}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateHeadset)
+                        else :
+                            UpdateHeadset = {'$set' : {"headset" : int(HardwareSets["headset"])}}
+                            id_update = {'_id' : project_id["_id"]}
+                            db.projects.update_one(id_update, UpdateHeadset)
+
+
+                    response = {
+
+                            "headset" : new_headset,
+                            "webcam" : new_webcam
+                    }
+
+                    return jsonify({"value": response, "msg": "Succesfull"}), 200
+            else :
+                return jsonify({'error': "Error checking out"}), 400
+            
+         
+    def checkin(self):    
+
+        HardwareSets = {
+          'headset' : request.json['headset'],
+          'webcam' : request.json['webcam'],
+        }  
+
+        if HardwareSets['headset'] != "" and (HardwareSets['webcam'] == None or HardwareSets['webcam'] == ""):
+            result_headset = db.Availability.find_one({"headset": {"$exists": True}})
+            result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
+            result_id = db.Availability.find_one({"_id": {"$exists": True}})
+            project_id = db.projects.find_one({"_id": projectId})
+            if project_id : 
+                if "headset" in project_id :
+                    if int(HardwareSets["headset"]) > project_id["headset"]:
+                        return jsonify({'error': "You are trying to checkin more than you have checkedout"}), 400
+                    else :
+                        new_headset = result_headset["headset"] + int(HardwareSets['headset'])
+                        id = {'_id' : result_id["_id"]}
+                        values = {'$set' : {"headset" : new_headset}}
+                        db.Availability.update_one(id, values)
+
+                        update_headset = project_id["headset"] - int(HardwareSets["headset"])
+                        UpdateHeadset = {'$set' : {"headset" : update_headset}}
+                        id_update = {'_id' : project_id["_id"]}
+                        db.projects.update_one(id_update, UpdateHeadset)
+
+                        response = {
+
+                            "headset" : new_headset,
+                            "webcam" : result_webcam["webcam"]
+                        }
+
+                        return jsonify({"value": response, "msg": "Succesfull"}), 200
+            
+                else :
+                    return jsonify({'error': "The field you are requesting to checkin has not been checkedout by your project"}), 500
+
+            else :
+                return jsonify({'error': "Please login first to checkin"}), 300
+        
+        
+        elif HardwareSets['webcam'] != "" and (HardwareSets['headset'] == None or HardwareSets['headset'] == ""):
+            result_headset = db.Availability.find_one({"headset": {"$exists": True}})
+            result_webcam = db.Availability.find_one({"webcam": {"$exists": True}})
+            result_id = db.Availability.find_one({"_id": {"$exists": True}})
+            project_id = db.projects.find_one({"_id": projectId})
+            if project_id : 
+                if "webcam" in project_id :
+                    if int(HardwareSets["webcam"]) > project_id["webcam"]:
+                        return jsonify({'error': "You are trying to checkin more than you have checkedout"}), 400
+                    else :
+                        new_webcam = result_webcam["webcam"] + int(HardwareSets['headset'])
+                        id = {'_id' : result_id["_id"]}
+                        values = {'$set' : {"webcam" : new_headset}}
+                        db.Availability.update_one(id, values)
+
+                        update_webcam = project_id["webcam"] - int(HardwareSets["webcam"])
+                        UpdateWebcam = {'$set' : {"webcam" : update_webcam}}
+                        id_update = {'_id' : project_id["_id"]}
+                        db.projects.update_one(id_update, UpdateWebcam)
+
+                        response = {
+
+                            "headset" : result_headset,
+                            "webcam" : new_webcam
+                        }
+
+                        return jsonify({"value": response, "msg": "Succesfull"}), 200
+            
+                else :
+                    return jsonify({'error': "The field you are requesting to checkin has not been checkedout by your project"}), 500
+
+            else :
+                return jsonify({'error': "Please login first to checkin"}), 300
+
+
   
    
    
