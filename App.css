@@ -1,0 +1,20 @@
+.join {
+  position: absolute;
+  top: 50%;
+  right: 50%;
+}
+.new {
+  position: absolute;
+  top: 40%;
+  right: 47%;
+}
+.ID {
+  position: absolute;
+  top: 25%;
+  right: 45%;
+}
+.project {
+  position: absolute;
+  top: 10%;
+  right: 45%;
+}
