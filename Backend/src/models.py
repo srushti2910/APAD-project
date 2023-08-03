@@ -5,11 +5,9 @@ from app import db, projectId, name
 from cryptography.fernet import Fernet
 import base64
 import bcrypt
-import rsa
 
 #key = Fernet.generate_key()
 #f = Fernet(key)
-key = "B3cpAFLjfjWG41S5pXyC19WBWalycnMXmaE4Zg99TSs="
 #projectId = 0
 
 #with open('mykey.key', 'wb') as mykey:
@@ -21,7 +19,6 @@ key = "B3cpAFLjfjWG41S5pXyC19WBWalycnMXmaE4Zg99TSs="
 class user:
    
    def userSignIn(self):
-      f = Fernet(key)
     
       flag = 0
       userdetails = {

@@ -14,7 +14,7 @@ body {
   
   
   div.transbox {
-    text-align: center;
+    text-align: left;
     justify-content : center;
     align-items: center;
     width: auto;
@@ -81,7 +81,7 @@ label {
     text-align: center;
     justify-content : center;
     align-content: center;
-    float : center;
+
     margin-right: 100px;
     
 }
