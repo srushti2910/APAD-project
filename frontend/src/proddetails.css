@@ -47,7 +47,7 @@ button {
     float : center;
 }
 
-div.transbox {
+div.transbox1 {
     text-align: center;
     justify-content : center;
     align-items: center;
@@ -60,6 +60,7 @@ div.transbox {
     margin-top: 100px;
     background-color: black;
     opacity: 0.7;
+    
   }
 
   div.trans {

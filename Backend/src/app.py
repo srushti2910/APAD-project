@@ -47,8 +47,8 @@ with open(file_path, 'r') as file:
     data = file.read()
 
 
-app.config['MONGO_URI'] = 'mongodb://localhost/APAD_app'
-mongo = PyMongo(app)
+#app.config['MONGO_URI'] = 'mongodb://localhost/APAD_app'
+#mongo = PyMongo(app)
 client = MongoClient(data, tlsCAFile=certifi.where())
 db = client.APAD_app
 CORS(app)

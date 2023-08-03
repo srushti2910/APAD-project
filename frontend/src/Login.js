@@ -14,7 +14,9 @@ const Login = () => {
       try{
           const response = await fetch("/getsignin");
           if(response.status !== 200){
+            console.log("in if ")
             navigate("/signIn")
+            return;
           }
       }catch (error) {
         console.error('Error loading page', error);

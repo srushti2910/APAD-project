@@ -70,9 +70,6 @@ const Dashboard = ({}) => {
   }, []);
 
 
-  
-
-
   useEffect(() => {
     const fetchMembers = async () => {
       try{
@@ -239,7 +236,7 @@ const Dashboard = ({}) => {
   return (
 
     <header className ="transbox">
-    <div className = "transbox">
+    <div className = "transbox1">
         
       <form>
       <h1>Dashboard</h1> 

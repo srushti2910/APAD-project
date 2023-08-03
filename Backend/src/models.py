@@ -12,8 +12,7 @@ class user:
           'email' : request.json['email'],
           'password' : request.json['password'],
       } 
-      #userdetails['password'] = (bcrypt.hashpw(userdetails['password'].encode('utf-8'), bcrypt.gensalt())).decode('utf-8')  
-      #userdetails['password'] = (f.encrypt(userdetails['password'].encode()))     
+      #userdetails['password'] = (bcrypt.hashpw(userdetails['password'].encode('utf-8'), bcrypt.gensalt())).decode('utf-8')       
       for document in db.users.find():
           email = document["email"]
           password = document["password"]
@@ -24,14 +23,11 @@ class user:
             name = document["email"]
             flag+=1
             return jsonify({'msg': "SignIn succcessful"})
-      #if db.users.find_one({"email": userdetails['email'], "password": userdetails['password']}):
-        #flag+=1
-        #return jsonify({'msg': "SignIn succcessful"})
             
       if flag == 0:
         return jsonify({'error': "invalid email id or password"}), 500
       
-
+      
    def createNewUser(self):
     
         confirmPassword = request.json['confirmPassword']
@@ -133,6 +129,7 @@ class project:
     def getsignin(self):
 
         if name == "" :
+            print("in if")
             return jsonify({'error': "Not signed in"}), 400
 
         else :
@@ -145,7 +142,7 @@ class dashboard:
 
     def getWebCam_Capacity(self):
        
-        capacity_webcam = 100
+        capacity_webcam = 1000
             #'capacity_headset': 100
         
 
@@ -157,7 +154,7 @@ class dashboard:
     
     def getHeadset_Capacity(self):
 
-        capacity_headset = 100
+        capacity_headset = 1000
 
         result = db.fixed_values.find_one({"capacity_headset": {"$exists": True}})
         if result:

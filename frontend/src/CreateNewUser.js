@@ -43,7 +43,7 @@ const CreateNewUser = () => {
   };
 
   return (
-    <div className ="transbox">
+    <div className ="transbox2">
     <div>
       <h1>New User</h1>
       <form onSubmit={handleLogin}>
