@@ -23,6 +23,28 @@ const Dashboard = ({}) => {
 
 
   useEffect(() => {
+    const fetchDetails = async () => {
+      try{
+          const response = await fetch("/getdetails");
+          const data = await response.json();
+          if(response.status === 400){
+            navigate("/login")
+          }
+
+          console.log(response)
+          console.log(data)
+          setprojectId(data.value.projectId)
+          setCheckout_headset(data.value.checkout_headset)
+          setCheckout_webcam(data.value.checkout_webcam)
+      }catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchDetails();
+  }, []);
+
+
+  useEffect(() => {
     axios.get('/getWebCam_Capacity')
         .then((response) => setWebcam_Capacity(response.data.value))
         .catch(error => console.log(error));
@@ -48,22 +70,7 @@ const Dashboard = ({}) => {
   }, []);
 
 
-  useEffect(() => {
-    const fetchDetails = async () => {
-      try{
-          const response = await fetch("/getdetails");
-          const data = await response.json();
-          console.log(response)
-          console.log(data)
-          setprojectId(data.value.projectId)
-          setCheckout_headset(data.value.checkout_headset)
-          setCheckout_webcam(data.value.checkout_webcam)
-      }catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-    fetchDetails();
-  }, []);
+  
 
 
   useEffect(() => {
@@ -103,8 +110,16 @@ const Dashboard = ({}) => {
 
   const handleLogout = async (e) => {
     e.preventDefault();
-    navigate("/signIn")
 
+    const response = await fetch("/logout", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    
+      navigate("/signIn")
+    
     
   };
 

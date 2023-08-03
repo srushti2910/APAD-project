@@ -11,9 +11,46 @@ app = Flask(__name__)
 projectId = 0
 name = ""
 
+
+
+# uri = "mongodb+srv://srushtinandal29:lovedance2910@cluster0.x2dsham.mongodb.net/"
+
+#publicKey, privateKey = rsa.newkeys(1024)
+
+# encMessage = rsa.encrypt(uri.encode(),
+#                          publicKey)
+# encMessage = encMessage.hex()
+
+# file_path = 'mongoDBURL.txt'  
+# with open(file_path, 'a') as file:
+#      file.write(encMessage)
+
+
+# data_to_encrypt_bytes = uri.encode()
+# encrypted_data_bytes = fernet.encrypt(data_to_encrypt_bytes)
+# encrypted_data = encrypted_data_bytes.decode()
+
+# file_path = 'mongoDBURL.txt'  
+# with open(file_path, 'a') as file:
+#     file.write(encrypted_data)
+
+# file_path = 'mongoDBURL.txt'  # Replace with the path to your text file
+# with open(file_path, 'r') as file:
+#     # Use the read() method to read the entire contents of the file
+#     data = file.read()
+
+# byte_data = bytes.fromhex(data)
+
+# decMessage = rsa.decrypt(byte_data, privateKey).decode()
+
+file_path = 'mongoDBURL.txt'  # Replace with the path to your text file
+with open(file_path, 'r') as file:
+    data = file.read()
+
+
 app.config['MONGO_URI'] = 'mongodb://localhost/APAD_app'
 mongo = PyMongo(app)
-client = MongoClient('mongodb+srv://srushtinandal29:lovedance2910@cluster0.x2dsham.mongodb.net/', tlsCAFile=certifi.where())
+client = MongoClient(data, tlsCAFile=certifi.where())
 db = client.APAD_app
 CORS(app)
 
@@ -65,7 +102,13 @@ def getdetails():
 def getmembers():
     return models.dashboard().getmembers()
 
+@app.route('/getsignin', methods=['GET'])
+def getsignin():
+    return models.project().getsignin()
 
+@app.route('/logout', methods=['GET'])
+def logout():
+    return models.user().logout()
 
 if __name__ == '__main__':
     app.run(debug=True)

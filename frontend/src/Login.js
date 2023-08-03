@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
@@ -8,6 +8,20 @@ import './prodid.css';
 const Login = () => {
   const [projectName, setProjectName] = useState("");
   const [projectId, setProjectId] = useState("");
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      try{
+          const response = await fetch("/getsignin");
+          if(response.status !== 200){
+            navigate("/signIn")
+          }
+      }catch (error) {
+        console.error('Error loading page', error);
+      }
+    };
+    fetchDetails();
+  }, []);
  
   const navigate = useNavigate();
   const handleLogin = async (e) => {

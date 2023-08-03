@@ -50,17 +50,17 @@ const SignIn = ({onSignIn}) => {
   return (
     <div className = "transbox">
       <div>
-      <h1> "The Gadget Groove"</h1><br/>
+      <h1> "The Gadget Groove"</h1>
       <h4>Why Buy when you can Borrow</h4>
 
       <form onSubmit={handleLogin}>
         <div>
-          <label>Email: &ensp;</label>
+          <label>Email:</label>
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required/>*<br/><br/>
         </div>
         <div>
-          <label>Password: &ensp;</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>*<br/><br/>
+          
+        <label>Password:</label> <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>*<br/><br/>
         </div>
         <button type="submit">Login</button>
         <div>
