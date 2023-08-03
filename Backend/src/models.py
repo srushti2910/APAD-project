@@ -1,20 +1,7 @@
 from flask import Flask,  request, jsonify, render_template
 import uuid
-from passlib.hash import pbkdf2_sha256
 from app import db, projectId, name
-from cryptography.fernet import Fernet
-import base64
 import bcrypt
-
-#key = Fernet.generate_key()
-#f = Fernet(key)
-#projectId = 0
-
-#with open('mykey.key', 'wb') as mykey:
-   #mykey.write(key)
-
-#with open('mykey.key', 'rb') as mykey:
-   #key = mykey.read()
 
 class user:
    
@@ -46,7 +33,7 @@ class user:
       
 
    def createNewUser(self):
-        f = Fernet(key)
+    
         confirmPassword = request.json['confirmPassword']
         newUser = {
             '_id': uuid.uuid4().hex,
@@ -226,7 +213,8 @@ class dashboard:
             if "members" in project_id :
                 members = project_id["members"]
                 return jsonify(members)
-  
+            else :
+                return jsonify("not logged in")
 
     def checkout(self):
         

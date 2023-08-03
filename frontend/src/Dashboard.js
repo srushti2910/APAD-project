@@ -164,10 +164,16 @@ const Dashboard = ({}) => {
 
     }else if(response.status === 500){
       toast.error('You have rquested for more items than available. Please request items within availability', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }else if(response.status === 300){
       toast.error('Please login first to checkout', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }else {
       toast.error('Error checking out', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }
   };
 
@@ -213,12 +219,20 @@ const Dashboard = ({}) => {
 
     }else if(response.status === 500){
       toast.error('The field you are requesting to checkin has not been checkedout by your project', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }else if(response.status === 300){
       toast.error('Please login first to checkin', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }else if(response.status === 400){
       toast.error('You are trying to checkin more than you have checkedout', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }else {
       toast.error('Error checking in', {position: "top-center", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined, theme: "dark",});
+      setHeadset('')
+      setWebcam('')
     }
   };
   

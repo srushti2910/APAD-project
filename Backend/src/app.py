@@ -12,7 +12,6 @@ projectId = 0
 name = ""
 
 
-
 # uri = "mongodb+srv://srushtinandal29:lovedance2910@cluster0.x2dsham.mongodb.net/"
 
 #publicKey, privateKey = rsa.newkeys(1024)
@@ -43,7 +42,7 @@ name = ""
 
 # decMessage = rsa.decrypt(byte_data, privateKey).decode()
 
-file_path = 'mongoDBURL.txt'  # Replace with the path to your text file
+file_path = 'mongoDBURL.txt' 
 with open(file_path, 'r') as file:
     data = file.read()
 
